@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Futbolle - Juego de Adivinanza</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <header class="header">
+    <h1 class="header-title">Futbolle</h1>
+    <nav class="header-nav">
+      <a href="index.html" class="nav-link active">Juego</a>
+      <a href="contacto.html" class="nav-link">Contacto</a>
+      <a href="https://github.com" target="_blank" class="nav-link">GitHub</a>
+    </nav>
+  </header>
+
+  <main class="main-container">
+    <section class="game-section">
+      <div class="player-input-container">
+        <label for="player-name-input" class="input-label">Ingresa tu nombre para comenzar (mínimo 3 letras):</label>
+        <div class="input-group">
+          <input type="text" id="player-name-input" class="text-input" placeholder="Tu nombre...">
+          <button id="btn-start-game" class="btn">Comenzar Partida</button>
+        </div>
+      </div>
+
+      <div id="game-board" class="game-board hidden">
+        <div class="game-info">
+          <p class="info-item">Intentos restantes: <span id="attempts-left">8</span></p>
+          <p class="info-item">Tiempo: <span id="game-timer">00:00</span></p>
+          <button id="btn-restart" class="btn btn-secondary">Reiniciar Juego</button>
+        </div>
+
+        <div class="search-container">
+          <label for="search-input" class="input-label">Adivina el jugador:</label>
+          <input type="text" id="search-input" class="text-input" placeholder="Escribe el nombre de un jugador..." autocomplete="off">
+          <ul id="autocomplete-list" class="autocomplete-list hidden"></ul>
+        </div>
+
+        <div class="board-header">
+          <span class="column-title">Jugador</span>
+          <span class="column-title">Nacionalidad</span>
+          <span class="column-title">Club</span>
+          <span class="column-title">Posición</span>
+          <span class="column-title">Edad</span>
+          <span class="column-title">Overall</span>
+          <span class="column-title">Altura</span>
+        </div>
+
+        <div id="attempts-container" class="attempts-container">
+          <!-- Los intentos cargados dinámicamente con JS irán aquí -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal personalizado para evitar usar alert() -->
+  <div id="modal-container" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h2 id="modal-title" class="modal-title">Aviso</h2>
+      <p id="modal-message" class="modal-message">Mensaje del sistema...</p>
+      <button id="btn-close-modal" class="btn">Aceptar</button>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
