@@ -235,3 +235,34 @@ li:hover {
     flex-direction: column;
   }
 }
+.contact-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+}
+.section-title {
+  margin-bottom: 20px;
+  color: #38bdf8;
+  font-size: 22px;
+  font-weight: bold;
+}
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 20px;
+  background-color: #1e293b;
+  border-radius: 8px;
+  border: 1px solid #475569;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+.text-area {
+  resize: vertical;
+  min-height: 100px;
+}
