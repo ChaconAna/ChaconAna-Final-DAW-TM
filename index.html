@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <!-- Configuración de caracteres especiales (acentos, ñ) -->
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Futbolle - Juego de Adivinanza</title>
+
+  <!-- Favicon con emoji de fútbol -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>">
+
   <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -16,6 +22,8 @@
       <a href="index.html" class="nav-link active">Juego</a>
       <a href="contacto.html" class="nav-link">Contacto</a>
       <a href="https://github.com" target="_blank" class="nav-link">GitHub</a>
+
+      <!botón para alternar entre modo claro y oscuro, con un id para poder manipularlo desde JS>
       <button id="btn-toggle-theme" class="btn btn-secondary btn-small">Modo Claro</button>
     </nav>
   </header>
@@ -50,10 +58,12 @@
 
         <!-- Pistas según dificultad -->
         <div id="clue-container" class="clue-container hidden">
+
           <div id="photo-clue-wrapper" class="photo-clue-wrapper hidden">
             <p class="input-label">Pista de Foto Secreta:</p>
             <img id="secret-player-photo" class="secret-photo blur-max" src="" alt="Jugador Secreto" >
           </div>
+
           <div id="text-clue-wrapper" class="text-clue-wrapper hidden">
             <p class="input-label">Cualidades Reveladas:</p>
             <p id="text-clue-content" class="clue-text">Se irán revelando atributos a medida que agotes intentos...</p>
@@ -127,7 +137,6 @@
     </div>
   </div>
 
-  <!-- VINCULACIÓN DE ARCHIVOS JS -->
   <script src="js/api.js"></script>
   <script src="js/game.js"></script>
 </body>

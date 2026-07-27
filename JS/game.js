@@ -183,17 +183,18 @@ function resetGame() {
     autocompleteList.innerHTML = '';
     autocompleteList.classList.add('hidden');
   }
-
-  getRandomPlayer(
+  // Llamada correcta a api.js
+  obtenerJugadorAleatorio(
     function (player) {
       secretPlayer = player;
       updateCluesUI();
       startTimer();
     },
     function () {
-      showModal('Error de Conexión', 'No se pudo cargar el jugador secreto. Reintenta.');
+      showModal('Error de Conexión', 'No se pudo cargar el jugador secreto desde la API.');
     }
-  );
+);
+  
 }
 
 function handleStartGame() {
@@ -333,15 +334,15 @@ function handleSearchInput() {
   }
 
   searchDebounceTimeout = setTimeout(function () {
-    searchPlayers(
-      query,
-      function (results) {
-        renderAutocompleteResults(results);
-      },
-      function () {
-        if (autocompleteList) autocompleteList.classList.add('hidden');
-      }
-    );
+    buscarJugadores(
+  query,
+  function (results) {
+    renderAutocompleteResults(results);
+  },
+  function () {
+    if (autocompleteList) autocompleteList.classList.add('hidden');
+  }
+);
   }, 250);
 }
 
