@@ -15,6 +15,7 @@
       <a href="index.html" class="nav-link active">Juego</a>
       <a href="contacto.html" class="nav-link">Contacto</a>
       <a href="https://github.com" target="_blank" class="nav-link">GitHub</a>
+      <button id="btn-toggle-theme" class="btn btn-secondary btn-small">Modo Claro</button>
     </nav>
   </header>
 
@@ -24,15 +25,38 @@
         <label for="player-name-input" class="input-label">Ingresa tu nombre para comenzar (mínimo 3 letras):</label>
         <div class="input-group">
           <input type="text" id="player-name-input" class="text-input" placeholder="Tu nombre...">
-          <button id="btn-start-game" class="btn">Comenzar Partida</button>
         </div>
+
+        <label for="difficulty-select" class="input-label margin-top">Selecciona la Dificultad:</label>
+        <select id="difficulty-select" class="text-input">
+          <option value="easy">Fácil (Foto desenfocada + Pistas)</option>
+          <option value="medium">Medio (Sin foto + Cualidades progresivas)</option>
+          <option value="hard">Difícil (Solo feedback de intentos)</option>
+        </select>
+
+        <button id="btn-start-game" class="btn margin-top">Comenzar Partida</button>
       </div>
 
       <div id="game-board" class="game-board hidden">
         <div class="game-info">
           <p class="info-item">Intentos restantes: <span id="attempts-left">8</span></p>
           <p class="info-item">Tiempo: <span id="game-timer">00:00</span></p>
-          <button id="btn-restart" class="btn btn-secondary">Reiniciar Juego</button>
+          <div class="game-actions">
+            <button id="btn-show-history" class="btn btn-secondary">Historial</button>
+            <button id="btn-restart" class="btn btn-secondary">Reiniciar Juego</button>
+          </div>
+        </div>
+
+        <!-- Pistas según dificultad -->
+        <div id="clue-container" class="clue-container hidden">
+          <div id="photo-clue-wrapper" class="photo-clue-wrapper hidden">
+            <p class="input-label">Pista de Foto Secreta:</p>
+            <img id="secret-player-photo" class="secret-photo blur-max" src="" alt="Jugador Secreto">
+          </div>
+          <div id="text-clue-wrapper" class="text-clue-wrapper hidden">
+            <p class="input-label">Cualidades Reveladas:</p>
+            <p id="text-clue-content" class="clue-text">Se irán revelando atributos a medida que agotes intentos...</p>
+          </div>
         </div>
 
         <div class="search-container">
@@ -58,12 +82,47 @@
     </section>
   </main>
 
-  <!-- Modal personalizado para evitar usar alert() -->
+  <!-- Modal para avisos / finales de juego -->
   <div id="modal-container" class="modal-overlay hidden">
     <div class="modal-content">
       <h2 id="modal-title" class="modal-title">Aviso</h2>
       <p id="modal-message" class="modal-message">Mensaje del sistema...</p>
       <button id="btn-close-modal" class="btn">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- Modal para Historial de Partidas -->
+  <div id="history-modal-container" class="modal-overlay hidden">
+    <div class="modal-content modal-large">
+      <h2 class="modal-title">Historial de Partidas</h2>
+      
+      <div class="sort-container">
+        <label for="sort-select" class="input-label">Ordenar por:</label>
+        <select id="sort-select" class="text-input">
+          <option value="date">Fecha (Más recientes primero)</option>
+          <option value="attempts">Cantidad de Intentos</option>
+        </select>
+      </div>
+
+      <div class="history-list-wrapper">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Jugador</th>
+              <th>Resultado</th>
+              <th>Intentos</th>
+              <th>Puntaje</th>
+              <th>Duración</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body">
+            <!-- Filas del historial dinámicas -->
+          </tbody>
+        </table>
+      </div>
+
+      <button id="btn-close-history-modal" class="btn margin-top">Cerrar</button>
     </div>
   </div>
 
