@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Futbolle - Juego de Adivinanza</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>">
   <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -51,7 +52,7 @@
         <div id="clue-container" class="clue-container hidden">
           <div id="photo-clue-wrapper" class="photo-clue-wrapper hidden">
             <p class="input-label">Pista de Foto Secreta:</p>
-            <img id="secret-player-photo" class="secret-photo blur-max" src="" alt="Jugador Secreto">
+            <img id="secret-player-photo" class="secret-photo blur-max" src="" alt="Jugador Secreto" >
           </div>
           <div id="text-clue-wrapper" class="text-clue-wrapper hidden">
             <p class="input-label">Cualidades Reveladas:</p>
@@ -76,7 +77,7 @@
         </div>
 
         <div id="attempts-container" class="attempts-container">
-          <!-- Los intentos cargados dinámicamente con JS irán aquí -->
+          <!-- Intentos renderizados por JS -->
         </div>
       </div>
     </section>
@@ -111,13 +112,13 @@
               <th>Jugador</th>
               <th>Resultado</th>
               <th>Intentos</th>
-              <th>Puntaje</th>
-              <th>Duración</th>
+              <th>Puntos</th>
+              <th>Tiempo</th>
               <th>Fecha</th>
             </tr>
           </thead>
           <tbody id="history-table-body">
-            <!-- Filas del historial dinámicas -->
+            <!-- Rellenado por JS -->
           </tbody>
         </table>
       </div>
@@ -126,6 +127,7 @@
     </div>
   </div>
 
+  <!-- VINCULACIÓN DE ARCHIVOS JS -->
   <script src="js/api.js"></script>
   <script src="js/game.js"></script>
 </body>

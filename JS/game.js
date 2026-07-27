@@ -10,6 +10,7 @@ var timerSeconds = 0;
 var isTimerRunning = false;
 var playerHumanName = '';
 var selectedDifficulty = 'easy';
+var searchDebounceTimeout = null;
 
 // Elementos del DOM
 var nameInput = document.getElementById('player-name-input');
@@ -42,21 +43,22 @@ var sortSelect = document.getElementById('sort-select');
 var historyTableBody = document.getElementById('history-table-body');
 var btnToggleTheme = document.getElementById('btn-toggle-theme');
 
-// Declaración de Funciones
 function showModal(title, message) {
-  modalTitle.textContent = title;
-  modalMessage.textContent = message;
-  modalContainer.classList.remove('hidden');
+  if (modalTitle && modalMessage && modalContainer) {
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modalContainer.classList.remove('hidden');
+  }
 }
 
 function hideModal() {
-  modalContainer.classList.add('hidden');
+  if (modalContainer) {
+    modalContainer.classList.add('hidden');
+  }
 }
 
 function startTimer() {
-  if (isTimerRunning) {
-    return;
-  }
+  stopTimer();
   isTimerRunning = true;
   timerInterval = setInterval(function () {
     var minutes;
@@ -71,7 +73,9 @@ function startTimer() {
     formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
     formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
 
-    gameTimerElement.textContent = formattedMinutes + ':' + formattedSeconds;
+    if (gameTimerElement) {
+      gameTimerElement.textContent = formattedMinutes + ':' + formattedSeconds;
+    }
   }, 1000);
 }
 
@@ -84,54 +88,24 @@ function stopTimer() {
 }
 
 function calculateScore(isWin, attemptsUsed, timeInSeconds, difficulty) {
-  var basePoints;
-  var timeBonus;
-  var finalScore;
+  var basePoints = difficulty === 'easy' ? 60 : (difficulty === 'medium' ? 80 : 100);
+  var timeBonus = timeInSeconds < 60 ? 20 : (timeInSeconds < 120 ? 10 : 0);
+  var finalScore = basePoints - ((attemptsUsed - 1) * 10) + timeBonus;
 
-  if (!isWin) {
-    return 0;
-  }
-
-  if (difficulty === 'easy') {
-    basePoints = 60;
-  } else if (difficulty === 'medium') {
-    basePoints = 80;
-  } else {
-    basePoints = 100;
-  }
-
-  if (timeInSeconds < 60) {
-    timeBonus = 20;
-  } else if (timeInSeconds < 120) {
-    timeBonus = 10;
-  } else {
-    timeBonus = 0;
-  }
-
-  finalScore = basePoints - ((attemptsUsed - 1) * 10) + timeBonus;
-
-  if (finalScore < 10) {
-    finalScore = 10;
-  }
-
-  return finalScore;
+  return finalScore < 10 ? 10 : finalScore;
 }
 
 function saveGameToHistory(isWin, attemptsUsed, timeInSeconds, score) {
-  var history;
-  var newRecord;
-  var now;
+  var history = JSON.parse(localStorage.getItem('futbolle_history') || '[]');
+  var now = new Date();
 
-  history = JSON.parse(localStorage.getItem('futbolle_history') || '[]');
-  now = new Date();
-
-  newRecord = {
+  var newRecord = {
     playerHuman: playerHumanName,
-    secretPlayerName: secretPlayer.name,
+    secretPlayerName: secretPlayer ? secretPlayer.name : 'Desconocido',
     result: isWin ? 'Ganó' : 'Perdió',
     attempts: attemptsUsed,
     score: score,
-    duration: gameTimerElement.textContent,
+    duration: gameTimerElement ? gameTimerElement.textContent : '00:00',
     date: now.toLocaleString()
   };
 
@@ -142,74 +116,108 @@ function saveGameToHistory(isWin, attemptsUsed, timeInSeconds, score) {
 function updateCluesUI() {
   var blurClasses;
   var attemptsUsed;
+  var photoUrl;
+
+  if (!secretPlayer) return;
 
   attemptsUsed = 8 - attemptsLeft;
 
   if (selectedDifficulty === 'easy') {
-    clueContainer.classList.remove('hidden');
-    photoClueWrapper.classList.remove('hidden');
-    textClueWrapper.classList.add('hidden');
+    if (clueContainer) clueContainer.classList.remove('hidden');
+    if (photoClueWrapper) photoClueWrapper.classList.remove('hidden');
+    if (textClueWrapper) textClueWrapper.classList.add('hidden');
 
-    secretPlayerPhoto.src = secretPlayer.photo;
-    blurClasses = ['blur-max', 'blur-high', 'blur-high', 'blur-mid', 'blur-mid', 'blur-low', 'blur-low', 'blur-none'];
-    secretPlayerPhoto.className = 'secret-photo ' + (blurClasses[attemptsUsed] || 'blur-none');
+    if (secretPlayerPhoto) {
+      // Búsqueda inteligente de la URL de la imagen independientemente del nombre del atributo
+      photoUrl = secretPlayer.photo || secretPlayer.photo_url || secretPlayer.image || secretPlayer.img_url || secretPlayer.avatar;
+
+      if (photoUrl && photoUrl.startsWith('//')) {
+        photoUrl = 'https:' + photoUrl;
+      }
+
+      // Si falla la imagen por error de red o link roto, muestra un avatar con iniciales de respuesto
+      secretPlayerPhoto.onerror = function() {
+        this.onerror = null;
+        this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(secretPlayer.name) + '&background=1e293b&color=38bdf8&size=128';
+      };
+
+      secretPlayerPhoto.src = photoUrl || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(secretPlayer.name) + '&background=1e293b&color=38bdf8&size=128');
+      
+      blurClasses = ['blur-max', 'blur-high', 'blur-high', 'blur-mid', 'blur-mid', 'blur-low', 'blur-low', 'blur-none'];
+      secretPlayerPhoto.className = 'secret-photo ' + (blurClasses[attemptsUsed] || 'blur-none');
+    }
   } else if (selectedDifficulty === 'medium') {
-    clueContainer.classList.remove('hidden');
-    photoClueWrapper.classList.add('hidden');
-    textClueWrapper.classList.remove('hidden');
+    if (clueContainer) clueContainer.classList.remove('hidden');
+    if (photoClueWrapper) photoClueWrapper.classList.add('hidden');
+    if (textClueWrapper) textClueWrapper.classList.remove('hidden');
 
-    if (attemptsUsed >= 4) {
-      textClueContent.textContent = 'Edad: ' + secretPlayer.age + ' | Altura: ' + secretPlayer.heightCm + 'cm | Overall: ' + secretPlayer.overall;
-    } else if (attemptsUsed >= 2) {
-      textClueContent.textContent = 'Edad: ' + secretPlayer.age + ' | Altura: ' + secretPlayer.heightCm + 'cm';
-    } else {
-      textClueContent.textContent = 'Se irán revelando atributos a medida que agotes intentos...';
+    if (textClueContent) {
+      if (attemptsUsed >= 4) {
+        textClueContent.textContent = 'Edad: ' + secretPlayer.age + ' | Altura: ' + secretPlayer.heightCm + 'cm | Overall: ' + secretPlayer.overall;
+      } else if (attemptsUsed >= 2) {
+        textClueContent.textContent = 'Edad: ' + secretPlayer.age + ' | Altura: ' + secretPlayer.heightCm + 'cm';
+      } else {
+        textClueContent.textContent = 'Se irán revelando atributos a medida que agotes intentos...';
+      }
     }
   } else {
-    clueContainer.classList.add('hidden');
+    if (clueContainer) clueContainer.classList.add('hidden');
   }
 }
 
 function resetGame() {
   stopTimer();
   timerSeconds = 0;
-  gameTimerElement.textContent = '00:00';
+  if (gameTimerElement) gameTimerElement.textContent = '00:00';
   attemptsLeft = 8;
-  attemptsLeftElement.textContent = attemptsLeft;
+  if (attemptsLeftElement) attemptsLeftElement.textContent = attemptsLeft;
   guessedPlayerIds = [];
   selectedPlayerToSubmit = null;
-  searchInput.value = '';
-  searchInput.disabled = false;
-  attemptsContainer.innerHTML = '';
-  autocompleteList.innerHTML = '';
-  autocompleteList.classList.add('hidden');
+  
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.disabled = false;
+  }
+  if (attemptsContainer) attemptsContainer.innerHTML = '';
+  if (autocompleteList) {
+    autocompleteList.innerHTML = '';
+    autocompleteList.classList.add('hidden');
+  }
 
   getRandomPlayer(
     function (player) {
       secretPlayer = player;
       updateCluesUI();
+      startTimer();
     },
-    function (errorMessage) {
-      showModal('Error de Red', errorMessage);
+    function () {
+      showModal('Error de Conexión', 'No se pudo cargar el jugador secreto. Reintenta.');
     }
   );
 }
 
 function handleStartGame() {
+  if (!nameInput) return;
+
   playerHumanName = nameInput.value.trim();
-  selectedDifficulty = difficultySelect.value;
+  if (difficultySelect) {
+    selectedDifficulty = difficultySelect.value;
+  }
 
   if (playerHumanName.length < 3) {
     showModal('Atención', 'Por favor ingresa un nombre válido con al menos 3 caracteres.');
     return;
   }
 
-  playerInputContainer.classList.add('hidden');
-  gameBoardSection.classList.remove('hidden');
+  if (playerInputContainer) playerInputContainer.classList.add('hidden');
+  if (gameBoardSection) gameBoardSection.classList.remove('hidden');
+
   resetGame();
 }
 
 function renderAutocompleteResults(players) {
+  if (!autocompleteList) return;
+
   autocompleteList.innerHTML = '';
 
   if (!players || players.length === 0) {
@@ -218,8 +226,7 @@ function renderAutocompleteResults(players) {
   }
 
   players.forEach(function (player) {
-    var li;
-    li = document.createElement('li');
+    var li = document.createElement('li');
     li.textContent = player.name + ' (' + player.club + ')';
 
     li.addEventListener('click', function () {
@@ -237,19 +244,12 @@ function renderAutocompleteResults(players) {
 }
 
 function createCell(text, isMatch, comparisonType, attemptedValue, secretValue) {
-  var cell;
-  var symbol;
-
-  cell = document.createElement('div');
+  var cell = document.createElement('div');
   cell.className = 'cell ' + (isMatch ? 'cell-match' : 'cell-mismatch');
-  symbol = '';
+  var symbol = '';
 
   if (comparisonType === 'numeric' && !isMatch) {
-    if (secretValue > attemptedValue) {
-      symbol = ' ↑';
-    } else {
-      symbol = ' ↓';
-    }
+    symbol = secretValue > attemptedValue ? ' ↑' : ' ↓';
   }
 
   cell.textContent = text + symbol;
@@ -258,45 +258,43 @@ function createCell(text, isMatch, comparisonType, attemptedValue, secretValue) 
 
 function processAttempt() {
   var row;
-  var isSameName;
   var attemptsUsed;
   var score;
 
-  if (!selectedPlayerToSubmit) {
-    showModal('Atención', 'Debes seleccionar un jugador de la lista desplegable.');
+  if (!selectedPlayerToSubmit) return;
+
+  if (!secretPlayer) {
+    showModal('Cargando', 'Obteniendo datos del jugador secreto...');
     return;
   }
 
-  isSameName = guessedPlayerIds.indexOf(selectedPlayerToSubmit.id) !== -1;
-  if (isSameName) {
-    showModal('Intento Duplicado', 'Ya has intentado con este jugador en esta partida.');
+  if (guessedPlayerIds.indexOf(selectedPlayerToSubmit.id) !== -1) {
+    showModal('Intento Duplicado', 'Ya probaste con este jugador.');
     selectedPlayerToSubmit = null;
-    searchInput.value = '';
+    if (searchInput) searchInput.value = '';
     return;
-  }
-
-  if (!isTimerRunning) {
-    startTimer();
   }
 
   guessedPlayerIds.push(selectedPlayerToSubmit.id);
   attemptsLeft -= 1;
-  attemptsLeftElement.textContent = attemptsLeft;
+  if (attemptsLeftElement) attemptsLeftElement.textContent = attemptsLeft;
 
   updateCluesUI();
 
   row = document.createElement('div');
   row.className = 'attempt-row';
 
-  row.appendChild(createCell(selectedPlayerToSubmit.name, selectedPlayerToSubmit.id === secretPlayer.id, 'exact', selectedPlayerToSubmit.id, secretPlayer.id));
-  row.appendChild(createCell(selectedPlayerToSubmit.nationality, selectedPlayerToSubmit.nationality === secretPlayer.nationality, 'exact', selectedPlayerToSubmit.nationality, secretPlayer.nationality));
-  row.appendChild(createCell(selectedPlayerToSubmit.club, selectedPlayerToSubmit.club === secretPlayer.club, 'exact', selectedPlayerToSubmit.club, secretPlayer.club));
-  row.appendChild(createCell(selectedPlayerToSubmit.position, selectedPlayerToSubmit.position === secretPlayer.position, 'exact', selectedPlayerToSubmit.position, secretPlayer.position));
+  row.appendChild(createCell(selectedPlayerToSubmit.name, selectedPlayerToSubmit.id === secretPlayer.id, 'exact'));
+  row.appendChild(createCell(selectedPlayerToSubmit.nationality, selectedPlayerToSubmit.nationality === secretPlayer.nationality, 'exact'));
+  row.appendChild(createCell(selectedPlayerToSubmit.club, selectedPlayerToSubmit.club === secretPlayer.club, 'exact'));
+  row.appendChild(createCell(selectedPlayerToSubmit.position, selectedPlayerToSubmit.position === secretPlayer.position, 'exact'));
   row.appendChild(createCell(selectedPlayerToSubmit.age + ' años', selectedPlayerToSubmit.age === secretPlayer.age, 'numeric', selectedPlayerToSubmit.age, secretPlayer.age));
   row.appendChild(createCell(selectedPlayerToSubmit.overall.toString(), selectedPlayerToSubmit.overall === secretPlayer.overall, 'numeric', selectedPlayerToSubmit.overall, secretPlayer.overall));
   row.appendChild(createCell(selectedPlayerToSubmit.heightCm + ' cm', selectedPlayerToSubmit.heightCm === secretPlayer.heightCm, 'numeric', selectedPlayerToSubmit.heightCm, secretPlayer.heightCm));
 
-  attemptsContainer.insertBefore(row, attemptsContainer.firstChild);
+  if (attemptsContainer) {
+    attemptsContainer.insertBefore(row, attemptsContainer.firstChild);
+  }
 
   attemptsUsed = 8 - attemptsLeft;
 
@@ -304,52 +302,60 @@ function processAttempt() {
     stopTimer();
     score = calculateScore(true, attemptsUsed, timerSeconds, selectedDifficulty);
     saveGameToHistory(true, attemptsUsed, timerSeconds, score);
-    showModal('¡Ganaste!', '¡Felicidades ' + playerHumanName + '! Has adivinado a ' + secretPlayer.name + ' en ' + attemptsUsed + ' intento(s). Puntaje: ' + score);
-    searchInput.disabled = true;
+    showModal('¡Ganaste!', '¡Felicidades ' + playerHumanName + '! Ganaste en ' + attemptsUsed + ' intento(s). Puntaje: ' + score);
+    if (searchInput) searchInput.disabled = true;
   } else if (attemptsLeft <= 0) {
     stopTimer();
     score = calculateScore(false, 8, timerSeconds, selectedDifficulty);
     saveGameToHistory(false, 8, timerSeconds, score);
-    showModal('¡Game Over!', 'Agotaste tus 8 intentos. El jugador era: ' + secretPlayer.name);
-    searchInput.disabled = true;
+    showModal('¡Game Over!', 'Agotaste tus intentos. Era: ' + secretPlayer.name);
+    if (searchInput) searchInput.disabled = true;
   }
 
   selectedPlayerToSubmit = null;
-  searchInput.value = '';
+  if (searchInput) searchInput.value = '';
 }
 
 function handleSearchInput() {
   var query;
+  if (!searchInput) return;
+
   query = searchInput.value;
 
+  if (searchDebounceTimeout) clearTimeout(searchDebounceTimeout);
+
   if (query.trim().length < 2) {
-    autocompleteList.innerHTML = '';
-    autocompleteList.classList.add('hidden');
+    if (autocompleteList) {
+      autocompleteList.innerHTML = '';
+      autocompleteList.classList.add('hidden');
+    }
     return;
   }
 
-  searchPlayers(
-    query,
-    function (results) {
-      renderAutocompleteResults(results);
-    },
-    function (errorMessage) {
-      showModal('Error de Búsqueda', errorMessage);
-    }
-  );
+  searchDebounceTimeout = setTimeout(function () {
+    searchPlayers(
+      query,
+      function (results) {
+        renderAutocompleteResults(results);
+      },
+      function () {
+        if (autocompleteList) autocompleteList.classList.add('hidden');
+      }
+    );
+  }, 250);
 }
 
 function renderHistoryTable() {
   var history;
   var sortBy;
 
+  if (!historyTableBody) return;
+
   history = JSON.parse(localStorage.getItem('futbolle_history') || '[]');
-  sortBy = sortSelect.value;
+  sortBy = sortSelect ? sortSelect.value : 'date';
 
   if (sortBy === 'attempts') {
-    history.sort(function (a, b) {
-      return a.attempts - b.attempts;
-    });
+    history.sort(function (a, b) { return a.attempts - b.attempts; });
   } else {
     history.reverse();
   }
@@ -362,8 +368,7 @@ function renderHistoryTable() {
   }
 
   history.forEach(function (item) {
-    var tr;
-    tr = document.createElement('tr');
+    var tr = document.createElement('tr');
     tr.innerHTML = '<td>' + item.playerHuman + ' (' + item.secretPlayerName + ')</td>' +
                    '<td>' + item.result + '</td>' +
                    '<td>' + item.attempts + '</td>' +
@@ -376,28 +381,26 @@ function renderHistoryTable() {
 
 function showHistoryModal() {
   renderHistoryTable();
-  historyModalContainer.classList.remove('hidden');
+  if (historyModalContainer) historyModalContainer.classList.remove('hidden');
 }
 
 function hideHistoryModal() {
-  historyModalContainer.classList.add('hidden');
+  if (historyModalContainer) historyModalContainer.classList.add('hidden');
 }
 
 function toggleTheme() {
   document.body.classList.toggle('light-mode');
-  if (document.body.classList.contains('light-mode')) {
-    btnToggleTheme.textContent = 'Modo Oscuro';
-  } else {
-    btnToggleTheme.textContent = 'Modo Claro';
+  if (btnToggleTheme) {
+    btnToggleTheme.textContent = document.body.classList.contains('light-mode') ? 'Modo Oscuro' : 'Modo Claro';
   }
 }
 
-// Eventos
-btnStartGame.addEventListener('click', handleStartGame);
-btnRestart.addEventListener('click', resetGame);
-btnCloseModal.addEventListener('click', hideModal);
-searchInput.addEventListener('input', handleSearchInput);
-btnShowHistory.addEventListener('click', showHistoryModal);
-btnCloseHistoryModal.addEventListener('click', hideHistoryModal);
-sortSelect.addEventListener('change', renderHistoryTable);
-btnToggleTheme.addEventListener('click', toggleTheme);
+// Listeners
+if (btnStartGame) btnStartGame.addEventListener('click', handleStartGame);
+if (btnRestart) btnRestart.addEventListener('click', resetGame);
+if (btnCloseModal) btnCloseModal.addEventListener('click', hideModal);
+if (searchInput) searchInput.addEventListener('input', handleSearchInput);
+if (btnShowHistory) btnShowHistory.addEventListener('click', showHistoryModal);
+if (btnCloseHistoryModal) btnCloseHistoryModal.addEventListener('click', hideHistoryModal);
+if (sortSelect) sortSelect.addEventListener('change', renderHistoryTable);
+if (btnToggleTheme) btnToggleTheme.addEventListener('click', toggleTheme);
