@@ -6,21 +6,30 @@ var contactNameInput = document.getElementById('contact-name');
 var contactEmailInput = document.getElementById('contact-email');
 var contactMessageInput = document.getElementById('contact-message');
 
+// Modal emergente para notificaciones de error/éxito
 var modalContainer = document.getElementById('modal-container');
 var modalTitle = document.getElementById('modal-title');
 var modalMessage = document.getElementById('modal-message');
 var btnCloseModal = document.getElementById('btn-close-modal');
 
-// Funciones
+// Funciones del modal
+
+/**
+ * Muestra el modal asignando un título y un mensaje explicativo.
+ * Saca la clase '.hidden' para hacerlo visible.
+ */
 function showModal(title, message) {
   modalTitle.textContent = title;
   modalMessage.textContent = message;
   modalContainer.classList.remove('hidden');
 }
 
+// Oculta el modal agregando la clase '.hidden'.
 function hideModal() {
   modalContainer.classList.add('hidden');
 }
+
+// Funciones de validación para los textos y el email ingresados en el formulario de contacto.
 
 function isAlphanumeric(text) {
   var regex;
@@ -34,6 +43,8 @@ function isValidEmail(email) {
   return regex.test(email);
 }
 
+// Función principal que maneja el envío del formulario de contacto.
+
 function handleFormSubmit(event) {
   var nameValue;
   var emailValue;
@@ -46,6 +57,7 @@ function handleFormSubmit(event) {
   emailValue = contactEmailInput.value.trim();
   messageValue = contactMessageInput.value.trim();
 
+  // Validaciones de los campos del formulario
   if (!nameValue || !isAlphanumeric(nameValue)) {
     showModal('Error de Validación', 'El nombre debe ser alfanumérico (solo letras y números, sin espacios ni caracteres especiales).');
     return;

@@ -26,12 +26,14 @@ var searchInput = document.getElementById('search-input');
 var autocompleteList = document.getElementById('autocomplete-list');
 var attemptsContainer = document.getElementById('attempts-container');
 
+// Elementos de las pistas
 var clueContainer = document.getElementById('clue-container');
 var photoClueWrapper = document.getElementById('photo-clue-wrapper');
 var secretPlayerPhoto = document.getElementById('secret-player-photo');
 var textClueWrapper = document.getElementById('text-clue-wrapper');
 var textClueContent = document.getElementById('text-clue-content');
 
+// Elementos de modales historial y notificaciones
 var modalContainer = document.getElementById('modal-container');
 var modalTitle = document.getElementById('modal-title');
 var modalMessage = document.getElementById('modal-message');
@@ -43,6 +45,9 @@ var sortSelect = document.getElementById('sort-select');
 var historyTableBody = document.getElementById('history-table-body');
 var btnToggleTheme = document.getElementById('btn-toggle-theme');
 
+//Funciones
+
+//Muestra el modal de notificaciones generales.
 function showModal(title, message) {
   if (modalTitle && modalMessage && modalContainer) {
     modalTitle.textContent = title;
@@ -51,12 +56,14 @@ function showModal(title, message) {
   }
 }
 
+//Oculta el modal de notificaciones generales.
 function hideModal() {
   if (modalContainer) {
     modalContainer.classList.add('hidden');
   }
 }
 
+//Inicia o reinicia el temporizador.
 function startTimer() {
   stopTimer();
   isTimerRunning = true;
@@ -79,6 +86,7 @@ function startTimer() {
   }, 1000);
 }
 
+//Detiene el temporizador.
 function stopTimer() {
   if (timerInterval) {
     clearInterval(timerInterval);
@@ -87,6 +95,7 @@ function stopTimer() {
   isTimerRunning = false;
 }
 
+//Calcula el puntaje final segun la dificultad, intentos usados y tiempo transcurrido.
 function calculateScore(isWin, attemptsUsed, timeInSeconds, difficulty) {
   var basePoints = difficulty === 'easy' ? 60 : (difficulty === 'medium' ? 80 : 100);
   var timeBonus = timeInSeconds < 60 ? 20 : (timeInSeconds < 120 ? 10 : 0);
@@ -113,6 +122,8 @@ function saveGameToHistory(isWin, attemptsUsed, timeInSeconds, score) {
   localStorage.setItem('futbolle_history', JSON.stringify(history));
 }
 
+//Actualiza la interfaz de las pistas según la dificultad seleccionada y los intentos restantes.
+
 function updateCluesUI() {
   var blurClasses;
   var attemptsUsed;
@@ -122,6 +133,7 @@ function updateCluesUI() {
 
   attemptsUsed = 8 - attemptsLeft;
 
+//facil: muestra la foto del jugador con un efecto de desenfoque que disminuye a medida que se usan intentos.
   if (selectedDifficulty === 'easy') {
     if (clueContainer) clueContainer.classList.remove('hidden');
     if (photoClueWrapper) photoClueWrapper.classList.remove('hidden');
@@ -146,7 +158,9 @@ function updateCluesUI() {
       blurClasses = ['blur-max', 'blur-high', 'blur-high', 'blur-mid', 'blur-mid', 'blur-low', 'blur-low', 'blur-none'];
       secretPlayerPhoto.className = 'secret-photo ' + (blurClasses[attemptsUsed] || 'blur-none');
     }
-  } else if (selectedDifficulty === 'medium') {
+  } 
+  //medio: muestra pistas de texto que revelan atributos del jugador secreto a medida que se usan intentos.
+  else if (selectedDifficulty === 'medium') {
     if (clueContainer) clueContainer.classList.remove('hidden');
     if (photoClueWrapper) photoClueWrapper.classList.add('hidden');
     if (textClueWrapper) textClueWrapper.classList.remove('hidden');
@@ -160,10 +174,14 @@ function updateCluesUI() {
         textClueContent.textContent = 'Se irán revelando atributos a medida que agotes intentos...';
       }
     }
-  } else {
+  } 
+  //dificil: no muestra pistas, solo el contador de intentos restantes.
+  else {
     if (clueContainer) clueContainer.classList.add('hidden');
   }
 }
+
+//Reinicia el juego. 
 
 function resetGame() {
   stopTimer();
@@ -183,7 +201,7 @@ function resetGame() {
     autocompleteList.innerHTML = '';
     autocompleteList.classList.add('hidden');
   }
-  // Llamada correcta a api.js
+ 
   obtenerJugadorAleatorio(
     function (player) {
       secretPlayer = player;
@@ -216,6 +234,8 @@ function handleStartGame() {
   resetGame();
 }
 
+//Buasca jugadores en la lista desplegable de autocompletado según la entrada del usuario.
+
 function renderAutocompleteResults(players) {
   if (!autocompleteList) return;
 
@@ -243,6 +263,8 @@ function renderAutocompleteResults(players) {
 
   autocompleteList.classList.remove('hidden');
 }
+
+//Procesa el intento del jugador y actualiza la interfaz según el resultado.
 
 function createCell(text, isMatch, comparisonType, attemptedValue, secretValue) {
   var cell = document.createElement('div');
@@ -299,13 +321,16 @@ function processAttempt() {
 
   attemptsUsed = 8 - attemptsLeft;
 
+  //Victoria.
   if (selectedPlayerToSubmit.id === secretPlayer.id) {
     stopTimer();
     score = calculateScore(true, attemptsUsed, timerSeconds, selectedDifficulty);
     saveGameToHistory(true, attemptsUsed, timerSeconds, score);
     showModal('¡Ganaste!', '¡Felicidades ' + playerHumanName + '! Ganaste en ' + attemptsUsed + ' intento(s). Puntaje: ' + score);
     if (searchInput) searchInput.disabled = true;
-  } else if (attemptsLeft <= 0) {
+  } 
+  //Derrota.
+  else if (attemptsLeft <= 0) {
     stopTimer();
     score = calculateScore(false, 8, timerSeconds, selectedDifficulty);
     saveGameToHistory(false, 8, timerSeconds, score);
@@ -345,6 +370,8 @@ function handleSearchInput() {
 );
   }, 250);
 }
+
+//Modal historial.
 
 function renderHistoryTable() {
   var history;
@@ -396,7 +423,7 @@ function toggleTheme() {
   }
 }
 
-// Listeners
+// Registro de eventos
 if (btnStartGame) btnStartGame.addEventListener('click', handleStartGame);
 if (btnRestart) btnRestart.addEventListener('click', resetGame);
 if (btnCloseModal) btnCloseModal.addEventListener('click', hideModal);

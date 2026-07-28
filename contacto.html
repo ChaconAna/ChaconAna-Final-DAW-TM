@@ -22,7 +22,8 @@
     <section class="contact-section">
       <h2 class="section-title">Formulario de Contacto</h2>
       
-      <!-- Usamos novalidate para asegurar que la validación sea 100% por JS -->
+      <!-- ATRIBUTO 'novalidate': Desactiva las validaciones nativas por defecto del navegador HTML5 
+           para asegurar que la lógica de validación sea ejecutada al 100% por JavaScript (contact.js). -->
       <form id="contact-form" class="contact-form" novalidate>
         <div class="form-group">
           <label for="contact-name" class="input-label">Nombre Alfanumérico:</label>
@@ -44,7 +45,7 @@
     </section>
   </main>
 
-  <!-- Modal para avisos -->
+  <!-- MODAL DE VENTANA EMERGENTE: Se utiliza para mostrar los mensajes de éxito o error al enviar el formulario -->
   <div id="modal-container" class="modal-overlay hidden">
     <div class="modal-content">
       <h2 id="modal-title" class="modal-title">Aviso</h2>
