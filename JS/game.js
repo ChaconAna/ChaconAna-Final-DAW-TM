@@ -15,7 +15,7 @@ var searchDebounceTimeout = null;
 // Elementos del DOM
 var nameInput = document.getElementById('player-name-input');
 var difficultySelect = document.getElementById('difficulty-select');
-var btnStartGame = document.getElementById('btn-start-game');
+var btnStarGame = document.getElementById('btn-start-game');
 var gameBoardSection = document.getElementById('game-board');
 var playerInputContainer = document.querySelector('.player-input-container');
 var attemptsLeftElement = document.getElementById('attempts-left');
@@ -202,12 +202,15 @@ function resetGame() {
     autocompleteList.classList.add('hidden');
   }
  
+  // Patrón CALLBACK para obtener el jugador secreto desde la API y manejar errores de conexión.
   obtenerJugadorAleatorio(
+    // Callback de éxito
     function (player) {
       secretPlayer = player;
       updateCluesUI();
       startTimer();
     },
+    // Callback de error
     function () {
       showModal('Error de Conexión', 'No se pudo cargar el jugador secreto desde la API.');
     }
@@ -215,6 +218,7 @@ function resetGame() {
   
 }
 
+//Inicia el juego después de que el jugador ingresa su nombre y selecciona la dificultad.
 function handleStartGame() {
   if (!nameInput) return;
 
@@ -342,6 +346,7 @@ function processAttempt() {
   if (searchInput) searchInput.value = '';
 }
 
+//Maneja la entrada del usuario en el campo de búsqueda y realiza la búsqueda de jugadores con un retraso para evitar demasiadas solicitudes a la API.
 function handleSearchInput() {
   var query;
   if (!searchInput) return;
@@ -424,7 +429,7 @@ function toggleTheme() {
 }
 
 // Registro de eventos
-if (btnStartGame) btnStartGame.addEventListener('click', handleStartGame);
+if (btnStarGame) btnStarGame.addEventListener('click', handleStartGame);
 if (btnRestart) btnRestart.addEventListener('click', resetGame);
 if (btnCloseModal) btnCloseModal.addEventListener('click', hideModal);
 if (searchInput) searchInput.addEventListener('input', handleSearchInput);

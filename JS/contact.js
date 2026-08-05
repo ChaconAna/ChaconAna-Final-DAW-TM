@@ -51,10 +51,11 @@ function handleFormSubmit(event) {
   var messageValue;
   var mailtoUrl;
 
-  event.preventDefault();
+  event.preventDefault(); // ebitamos recargar la página al enviar el formulario
 
-  nameValue = contactNameInput.value.trim();
-  emailValue = contactEmailInput.value.trim();
+  // Elimina los espacios en blanco sobrantes al inicio y final del texto.
+  nameValue = contactNameInput.value.trim(); 
+  emailValue = contactEmailInput.value.trim(); 
   messageValue = contactMessageInput.value.trim();
 
   // Validaciones de los campos del formulario
@@ -74,9 +75,9 @@ function handleFormSubmit(event) {
   }
 
   // Si todas las validaciones pasan, se abre el cliente predeterminado de correos
-  mailtoUrl = 'mailto:Tomas.ariaskarle@uai.edu.ar?subject=Consulta Futbolle de ' + encodeURIComponent(nameValue) + '&body=' + encodeURIComponent('De: ' + emailValue + '\n\nMensaje:\n' + messageValue);
+  mailtoUrl = 'mailto:Ana.chacon@alumnos.uai.edu.ar?subject=Consulta Futbolle de ' + encodeURIComponent(nameValue) + '&body=' + encodeURIComponent('De: ' + emailValue + '\n\nMensaje:\n' + messageValue);
 
-  window.location.href = mailtoUrl;
+  window.location.href = mailtoUrl; // Redirige al cliente de correo predeterminado con los datos del formulario
 
   showModal('Éxito', 'Se abrirá tu aplicación de correo para enviar el mensaje.');
   contactForm.reset();

@@ -229,7 +229,7 @@ body.light-mode .clue-container {
   text-align: center;
 }
 
-/* FOTO SECRETA SIN BOLA DE LUZ */
+/* FOTO SECRETA  */
 .secret-photo {
   width: 130px;
   height: 130px;
@@ -239,10 +239,10 @@ body.light-mode .clue-container {
   display: block;
   border: 3px solid #38bdf8;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-  transition: filter 0.4s ease, transform 0.3s ease;
+  transition: filter 0.4s ease, transform 0.3s ease; /* Transición suave para el desenfoque */
 }
 
-/* NIVELES DE DESENFOQUE SUAVES (Ideales para adivinar) */
+/* NIVELES DE DESENFOQUE (los regula)*/
 .blur-max  { filter: blur(5px); }
 .blur-high { filter: blur(3.5px); }
 .blur-mid  { filter: blur(2px); }
@@ -462,9 +462,10 @@ body.light-mode .contact-form {
 }
 
 .hidden {
-  display: none !important;
+  display: none !important; /* Clase para ocultar elementos de manera efectiva */
 }
 
+/* MEDIA QUERIES --> ajustes para pantallas mas chicas */
 @media (max-width: 600px) {
   header {
     flex-direction: column;
